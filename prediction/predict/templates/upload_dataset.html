@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Training Dataset</title>
+</head>
+<body>
+    <h1>Upload New Training Dataset</h1>
+
+    <p>Drop CSV files into <strong>data_feed/</strong> or upload them here. The scheduler will retrain the model automatically.</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload CSV</button>
+    </form>
+
+    {% if message %}
+        <p><strong>{{ message }}</strong></p>
+    {% endif %}
+
+    <h2>Recent Datasets</h2>
+    <ul>
+        {% for dataset in datasets %}
+            <li>{{ dataset.name }} — {{ dataset.status }} — uploaded {{ dataset.uploaded_at }}</li>
+        {% empty %}
+            <li>No datasets uploaded yet.</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Recent Training Runs</h2>
+    <ul>
+        {% for run in runs %}
+            <li>{{ run.started_at }} — {{ run.status }} — {{ run.dataset_count }} datasets — {{ run.row_count }} rows</li>
+        {% empty %}
+            <li>No training runs recorded yet.</li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="/">Back to prediction</a></p>
+</body>
+</html>

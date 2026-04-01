@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Credit Applicant Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Credit Applicant Dashboard</h1>
+    {% if status %}
+        <p>Last retrained: {{ status.last_retrained }}</p>
+        <p>Linear R²: {{ status.linear_r2 }}</p>
+        <p>CatBoost R²: {{ status.catboost_r2 }}</p>
+    {% else %}
+        <p>No retraining data yet.</p>
+    {% endif %}
+
+    <canvas id="creditChart" width="1000" height="500"></canvas>
+
+    <button id="retrain-btn">Retrain Now</button>
+    <div id="retrain-result"></div>
+
+    <script>
+        const actualPoints = {{ actual_points|safe }};
+        const linearLine = {{ linear_line|safe }};
+        const catboostLine = {{ catboost_line|safe }};
+        const retrainUrl = '{% url "retrain_now" %}';
+
+        const ctx = document.getElementById('creditChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'Actual Applicants',
+                        data: actualPoints,
+                        backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                    },
+                    {
+                        label: 'Linear Regression',
+                        data: linearLine,
+                        borderColor: 'red',
+                        borderWidth: 2,
+                        fill: false,
+                        showLine: true,
+                        pointRadius: 0,
+                        tension: 0.2,
+                    },
+                    {
+                        label: 'CatBoost',
+                        data: catboostLine,
+                        borderColor: 'blue',
+                        borderWidth: 3,
+                        fill: false,
+                        showLine: true,
+                        pointRadius: 0,
+                        tension: 0.2,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: {
+                            display: true,
+                            text: 'Monthly Income',
+                        },
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Credit Score',
+                        },
+                    },
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label(context) {
+                                const raw = context.raw;
+                                if (raw && raw.label) {
+                                    return raw.label;
+                                }
+                                return `Score: ${context.parsed.y}`;
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i += 1) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === `${name}=`) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.getElementById('retrain-btn').addEventListener('click', async () => {
+            const result = document.getElementById('retrain-result');
+            result.textContent = 'Retraining...';
+            const csrftoken = getCookie('csrftoken');
+
+            try {
+                const response = await fetch(retrainUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                    },
+                    credentials: 'same-origin',
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    result.textContent = `Error: ${data.error || 'Unknown error'}`;
+                } else {
+                    result.textContent = `Retrained: ${data.last_retrained}. Linear R²: ${data.linear_r2}. CatBoost R²: ${data.catboost_r2}.`;
+                }
+            } catch (exc) {
+                result.textContent = `Network error: ${exc.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

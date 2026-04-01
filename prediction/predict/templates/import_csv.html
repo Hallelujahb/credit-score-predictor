@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Import Credit Applicants from CSV</title>
+</head>
+<body>
+    <h1>Import Credit Applicants from CSV</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload CSV</button>
+    </form>
+
+    {% if message %}
+        <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    <p><a href="/">Back to prediction</a></p>
+    <p><a href="/dashboard/">View dashboard</a></p>
+</body>
+</html>

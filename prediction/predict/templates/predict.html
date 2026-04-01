@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Credit Score Predictor</title>
+</head>
+<body>
+    <h1>Credit Score Prediction</h1>
+ 
+    <form method="post">
+        {% csrf_token %}
+ 
+        <label>Monthly Income:</label>
+        <input type="number" name="monthly_income" step="0.01" required><br>
+ 
+        <label>Average Utility Bill:</label>
+        <input type="number" name="avg_utility_bill" step="0.01" required><br>
+ 
+        <label>Monthly Mobile Spend:</label>
+        <input type="number" name="mobile_spend" step="0.01" required><br>
+ 
+        <label>Savings Amount:</label>
+        <input type="number" name="savings_amount" step="0.01" required><br>
+ 
+        <label>Years at Job:</label>
+        <input type="number" name="years_at_job" required><br>
+ 
+        <label>Utilization Rate:</label>
+        <input type="number" name="utilization_rate" step="0.01" required><br>
+ 
+        <label>Days Since Overdraft:</label>
+        <input type="number" name="days_since_overdraft" required><br>
+ 
+        <label>Entrepreneur:</label>
+        <select name="is_entrepreneur" required>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select><br>
+ 
+        <label>Past On-Time Payments:</label>
+        <input type="number" name="past_on_time_payments" required><br>
+ 
+        <input type="submit" value="Predict Credit Score">
+    </form>
+ 
+    {% if prediction %}
+        <h2>Predicted Credit Score: {{ prediction }}</h2>
+    {% endif %}
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <p><a href="dashboard/">View credit applicant dashboard</a></p>
+</body>
+</html>

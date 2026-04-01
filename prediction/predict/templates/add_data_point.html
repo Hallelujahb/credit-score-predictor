@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Credit Applicant</title>
+</head>
+<body>
+    <h1>Add Credit Applicant Data</h1>
+
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Data</button>
+    </form>
+
+    <p><a href="../dashboard/">View dashboard</a></p>
+    <p><a href="../">Back to prediction</a></p>
+</body>
+</html>
