@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('predict.urls')),
     path('pr/', include('predict.urls')),
+    path('api/', include('api.urls')),
 ]
 
 if settings.DEBUG:

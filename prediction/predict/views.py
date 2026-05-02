@@ -4,9 +4,10 @@ from pathlib import Path
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
+from prediction.ml.predict import score_borrower
 from .forms import CreditApplicantForm, DatasetUploadForm
 from .ml_model import CreditPredictor
-from .models import CreditApplicant, SystemStatus, TrainingDataset, TrainingRun
+from .models import CreditApplicant, CreditApplication, SystemStatus, TrainingDataset, TrainingRun
 
 APP_DIR = Path(__file__).resolve().parent
 LINEAR_MODEL_PATH = APP_DIR / 'linear_predictor.joblib'
@@ -280,3 +281,40 @@ def retrain_now(request):
         'linear_r2': result['linear_metrics']['r2'],
         'catboost_r2': result['catboost_metrics']['r2'],
     })
+
+def index(request):
+    return render(request, 'prediction/index.html', {})
+
+
+def predict_view(request):
+    if request.method == 'POST':
+        try:
+            data = {
+                'monthly_income_etb':        float(request.POST.get('monthly_income_etb', 0)),
+                'telebirr_tx_count_30d':     int(request.POST.get('telebirr_tx_count_30d', 0)),
+                'telebirr_avg_tx_value_etb': float(request.POST.get('telebirr_avg_tx_value_etb', 0)),
+                'iqub_participation':        request.POST.get('iqub_participation') == 'true',
+                'iqub_months_active':        int(request.POST.get('iqub_months_active', 0)),
+                'merchant_category':         request.POST.get('merchant_category', 'retail'),
+                'region':                    request.POST.get('region', 'addis_ababa_other'),
+                'utility_bill_paid_on_time': request.POST.get('utility_bill_paid_on_time') == 'true',
+                'mobile_topup_count_30d':    int(request.POST.get('mobile_topup_count_30d', 0)),
+                'income_stability_score':    float(request.POST.get('income_stability_score', 0.5)),
+                'business_segment':          request.POST.get('business_segment', 'shop'),
+            }
+            result = score_borrower(data)
+            CreditApplication.objects.create(
+                monthly_income_etb=data['monthly_income_etb'],
+                telebirr_tx_count_30d=data['telebirr_tx_count_30d'],
+                merchant_category=data['merchant_category'],
+                region=data['region'],
+                iqub_participation=data['iqub_participation'],
+                credit_score=result['credit_score'],
+                risk_tier=result['risk_tier'],
+                approval_recommendation=result['approval_recommendation'],
+                repayment_probability=result['repayment_probability'],
+            )
+            return render(request, 'prediction/index.html', {'result': result, 'input': data})
+        except Exception as e:
+            return render(request, 'prediction/index.html', {'error': str(e)})
+    return render(request, 'prediction/index.html', {})

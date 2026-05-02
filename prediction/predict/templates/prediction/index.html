@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaza Credit — Score a Borrower</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; background: #f8f9fb; color: #20232a; }
+        .container { max-width: 860px; margin: auto; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+        h1 { margin-bottom: 0.25rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        input, select { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; }
+        button { background: #2563eb; color: white; border: none; padding: 0.9rem 1.4rem; border-radius: 8px; cursor: pointer; font-weight: 700; }
+        .result { margin-top: 1.5rem; padding: 1rem 1.25rem; border-radius: 12px; background: #eef2ff; }
+        .error { margin-top: 1rem; padding: 1rem; border-radius: 12px; background: #fee2e2; color: #b91c1c; }
+        .factors { margin-top: 1rem; }
+        .factors li { margin-bottom: 0.4rem; }
+        .section-title { margin-top: 1.5rem; font-size: 1rem; color: #4b5563; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kaza Credit</h1>
+        <p>Estimate a borrower credit score from Ethiopian mobile money and iqub signals.</p>
+
+        {% if error %}
+            <div class="error">Error: {{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="{% url 'predict' %}">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div>
+                    <label for="monthly_income_etb">Monthly income (ETB)</label>
+                    <input id="monthly_income_etb" name="monthly_income_etb" type="number" step="1" value="{{ input.monthly_income_etb|default:4500 }}" required>
+                </div>
+                <div>
+                    <label for="telebirr_tx_count_30d">Telebirr tx count (30d)</label>
+                    <input id="telebirr_tx_count_30d" name="telebirr_tx_count_30d" type="number" step="1" value="{{ input.telebirr_tx_count_30d|default:15 }}" required>
+                </div>
+                <div>
+                    <label for="telebirr_avg_tx_value_etb">Telebirr avg tx value (ETB)</label>
+                    <input id="telebirr_avg_tx_value_etb" name="telebirr_avg_tx_value_etb" type="number" step="1" value="{{ input.telebirr_avg_tx_value_etb|default:300 }}">
+                </div>
+                <div>
+                    <label for="merchant_category">Merchant category</label>
+                    <select id="merchant_category" name="merchant_category">
+                        <option value="retail" {% if input.merchant_category == 'retail' %}selected{% endif %}>Retail</option>
+                        <option value="food_beverage" {% if input.merchant_category == 'food_beverage' %}selected{% endif %}>Food & Beverage</option>
+                        <option value="transport" {% if input.merchant_category == 'transport' %}selected{% endif %}>Transport</option>
+                        <option value="services" {% if input.merchant_category == 'services' %}selected{% endif %}>Services</option>
+                        <option value="agriculture" {% if input.merchant_category == 'agriculture' %}selected{% endif %}>Agriculture</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="iqub_participation">Iqub participation</label>
+                    <select id="iqub_participation" name="iqub_participation">
+                        <option value="true" {% if input.iqub_participation == true %}selected{% endif %}>Yes</option>
+                        <option value="false" {% if input.iqub_participation == false %}selected{% endif %}>No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="iqub_months_active">Iqub months active</label>
+                    <input id="iqub_months_active" name="iqub_months_active" type="number" step="1" value="{{ input.iqub_months_active|default:6 }}">
+                </div>
+                <div>
+                    <label for="region">Region</label>
+                    <select id="region" name="region">
+                        <option value="addis_ababa_merkato" {% if input.region == 'addis_ababa_merkato' %}selected{% endif %}>Addis Ababa - Merkato</option>
+                        <option value="addis_ababa_bole" {% if input.region == 'addis_ababa_bole' %}selected{% endif %}>Addis Ababa - Bole</option>
+                        <option value="addis_ababa_piassa" {% if input.region == 'addis_ababa_piassa' %}selected{% endif %}>Addis Ababa - Piassa</option>
+                        <option value="addis_ababa_kazanchis" {% if input.region == 'addis_ababa_kazanchis' %}selected{% endif %}>Addis Ababa - Kazanchis</option>
+                        <option value="addis_ababa_other" {% if input.region == 'addis_ababa_other' %}selected{% endif %}>Addis Ababa - Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="utility_bill_paid_on_time">Utility bill paid on time</label>
+                    <select id="utility_bill_paid_on_time" name="utility_bill_paid_on_time">
+                        <option value="true" {% if input.utility_bill_paid_on_time == true %}selected{% endif %}>Yes</option>
+                        <option value="false" {% if input.utility_bill_paid_on_time == false %}selected{% endif %}>No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="mobile_topup_count_30d">Mobile top-up count (30d)</label>
+                    <input id="mobile_topup_count_30d" name="mobile_topup_count_30d" type="number" step="1" value="{{ input.mobile_topup_count_30d|default:4 }}">
+                </div>
+                <div>
+                    <label for="income_stability_score">Income stability score</label>
+                    <input id="income_stability_score" name="income_stability_score" type="number" step="0.01" min="0" max="1" value="{{ input.income_stability_score|default:0.65 }}">
+                </div>
+                <div>
+                    <label for="business_segment">Business segment</label>
+                    <select id="business_segment" name="business_segment">
+                        <option value="shop" {% if input.business_segment == 'shop' %}selected{% endif %}>Shop</option>
+                        <option value="street" {% if input.business_segment == 'street' %}selected{% endif %}>Street vendor</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button type="submit">Score borrower</button>
+            </div>
+        </form>
+
+        {% if result %}
+            <div class="result">
+                <h2>Credit Score: {{ result.credit_score }}</h2>
+                <p><strong>Risk tier:</strong> {{ result.risk_tier }}</p>
+                <p><strong>Recommendation:</strong> {{ result.approval_recommendation }}</p>
+                <p><strong>Repayment probability:</strong> {{ result.repayment_probability }}</p>
+                <p><strong>Confidence:</strong> {{ result.confidence }}</p>
+                <div class="factors">
+                    <p class="section-title">Top SHAP factors</p>
+                    <ul>
+                    {% for factor in result.top_factors %}
+                        <li>{{ factor.feature }} — {{ factor.impact }} ({{ factor.weight }})</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

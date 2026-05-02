@@ -69,6 +69,28 @@ class CreditApplicant(models.Model):
         return f"Income: {self.monthly_income}, Score: {self.credit_score}"
 
 
+class CreditApplication(models.Model):
+    monthly_income_etb = models.FloatField()
+    telebirr_tx_count_30d = models.IntegerField()
+    merchant_category = models.CharField(max_length=50)
+    region = models.CharField(max_length=100)
+    iqub_participation = models.BooleanField(default=False)
+
+    credit_score = models.IntegerField(null=True, blank=True)
+    risk_tier = models.CharField(max_length=50, null=True, blank=True)
+    approval_recommendation = models.CharField(max_length=100, null=True, blank=True)
+    repayment_probability = models.FloatField(null=True, blank=True)
+
+    scored_at = models.DateTimeField(auto_now_add=True)
+    api_version = models.CharField(max_length=10, default="1.0")
+
+    class Meta:
+        ordering = ['-scored_at']
+
+    def __str__(self):
+        return f"Application {self.id} | Score: {self.credit_score} | {self.scored_at.date()}"
+
+
 class SystemStatus(models.Model):
     last_retrained = models.DateTimeField(null=True, blank=True)
     linear_r2 = models.FloatField(null=True, blank=True)

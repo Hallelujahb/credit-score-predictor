@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+venv/
+env/
+.env
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# ML model files (too large for git — use git-lfs or document separately)
+prediction/prediction/ml/saved_models/*.cbm
+prediction/prediction/ml/saved_models/*.pkl
+
+# Data (synthetic CSVs can be regenerated)
+data/ethiopian_synthetic.csv
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db

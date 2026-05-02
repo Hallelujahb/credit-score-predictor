@@ -1,0 +1,13 @@
+[
+  "monthly_income_etb",
+  "telebirr_tx_count_30d",
+  "telebirr_avg_tx_value_etb",
+  "iqub_participation",
+  "iqub_months_active",
+  "merchant_category",
+  "region",
+  "utility_bill_paid_on_time",
+  "mobile_topup_count_30d",
+  "income_stability_score",
+  "business_segment"
+]

@@ -1,5 +1,13 @@
 from django.contrib import admin
-from .models import TrainingDataset, TrainingRun
+from .models import CreditApplication, TrainingDataset, TrainingRun
+
+
+@admin.register(CreditApplication)
+class CreditApplicationAdmin(admin.ModelAdmin):
+    list_display = ('credit_score', 'risk_tier', 'monthly_income_etb', 'scored_at')
+    search_fields = ('merchant_category', 'region')
+    list_filter = ('risk_tier', 'merchant_category', 'region', 'iqub_participation')
+    readonly_fields = ('scored_at',)
 
 
 @admin.register(TrainingDataset)
