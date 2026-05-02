@@ -134,8 +134,3 @@ Ethiopia's mobile money ecosystem crossed **40 million registered users** (2023)
 This is the data layer Kaza Credit is built on.
 
 ---
-
-## Built By
-
-**Hallelujah** — CS Student, Addis Ababa
-EAII AI Incubator Program — 2025
